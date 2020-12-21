@@ -1,0 +1,37 @@
+version: "3"
+ 
+services:
+  model:
+    image: model_api
+    container_name: model
+    build:
+      context: ./model
+      dockerfile: model.Dockerfile
+    volumes:
+      - ./model/src:/home/model/src
+  cv:
+    image: cv_api
+    container_name: cv
+    build:
+      context: ./cv
+      dockerfile: cv.Dockerfile
+    volumes:
+      - ./cv/src:/home/cv/src
+    environment:
+      - MODEL_API_URL=http://model:8080
+    depends_on: 
+      - model
+  web:
+    image: web_api
+    container_name: web
+    build:
+      context: ./web
+      dockerfile: web.Dockerfile
+    volumes:
+      - ./web/src:/home/web/src
+    depends_on:
+      - cv
+    environment:
+      - CV_API_URL=http://cv:12345
+    ports:
+      - 5000:5000
